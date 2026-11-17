@@ -1,4 +1,4 @@
-import { Editor, Menu, Plugin, PluginManifest } from "obsidian";
+import { Editor, MarkdownView, Menu, Notice, Plugin, PluginManifest, TFile } from "obsidian";
 import { wait } from "src/utils/util";
 import addIcons from "src/icons/customIcons";
 import { HighlightrSettingTab } from "../settings/settingsTab";
@@ -16,6 +16,9 @@ export default class HighlightrPlugin extends Plugin {
   editor: EnhancedEditor;
   manifest: PluginManifest;
   settings: HighlightrSettings;
+
+  // Visibility is temporary and belongs to a note, including its other panes.
+  private hiddenHighlightFiles = new WeakSet<TFile>();
 
   async onload() {
     console.log(`Highlightr v${this.manifest.version} loaded`);
@@ -35,6 +38,29 @@ export default class HighlightrPlugin extends Plugin {
     this.addSettingTab(new HighlightrSettingTab(this.app, this));
 
     this.addCommand({
+      id: "toggle-highlights",
+      name: "Toggle highlights in current note",
+      checkCallback: (checking) => {
+        const view = this.app.workspace.getActiveViewOfType(MarkdownView);
+        if (!view || !view.file) return false;
+        if (!checking) {
+          const hidden = !this.hiddenHighlightFiles.has(view.file);
+          if (hidden) {
+            this.hiddenHighlightFiles.add(view.file);
+          } else {
+            this.hiddenHighlightFiles.delete(view.file);
+          }
+          this.syncHighlightVisibility();
+          new Notice(hidden ? "Highlights hidden in this note" : "Highlights shown in this note");
+        }
+        return true;
+      },
+    });
+    this.registerEvent(this.app.workspace.on("file-open", () => this.syncHighlightVisibility()));
+    this.registerEvent(this.app.workspace.on("layout-change", () => this.syncHighlightVisibility()));
+    this.registerEvent(this.app.workspace.on("active-leaf-change", () => this.syncHighlightVisibility()));
+
+    this.addCommand({
       id: "highlighter-plugin-menu",
       name: "Open Highlightr",
       icon: "highlightr-pen",
@@ -52,6 +78,18 @@ export default class HighlightrPlugin extends Plugin {
     });
     this.generateCommands(this.editor);
     this.refresh();
+  }
+
+  private syncHighlightVisibility() {
+    this.app.workspace.iterateAllLeaves((leaf) => {
+      const view = leaf.view;
+      if (view instanceof MarkdownView) {
+        view.containerEl.classList.toggle(
+          "highlightr-highlights-hidden",
+          !!view.file && this.hiddenHighlightFiles.has(view.file)
+        );
+      }
+    });
   }
 
   reloadStyles(settings: HighlightrSettings) {
@@ -200,6 +238,9 @@ export default class HighlightrPlugin extends Plugin {
   };
 
   onunload() {
+    this.app.workspace.iterateAllLeaves((leaf) => {
+      leaf.view.containerEl.classList.remove("highlightr-highlights-hidden");
+    });
     console.log("Highlightr unloaded");
   }
 

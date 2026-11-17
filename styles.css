@@ -1,3 +1,13 @@
+/* Toggle only the decoration; keep highlighted text and note contents intact. */
+.workspace-leaf .workspace-leaf-content.highlightr-highlights-hidden mark,
+.workspace-leaf .workspace-leaf-content.highlightr-highlights-hidden .cm-highlight,
+.workspace-leaf .workspace-leaf-content.highlightr-highlights-hidden .cm-formatting-highlight {
+  background: transparent !important;
+  box-shadow: none !important;
+  text-shadow: none !important;
+  color: inherit !important;
+}
+
 /*highlighter style*/
 /*lowlight*/
 .highlightr-lowlight mark,

@@ -41,6 +41,12 @@ You can also use the new command added in version [1.0.0]() to open your highlig
 
 Version [1.1.2]() adds the ability to choose between inline CSS and CSS classes. This will create a new stylesheet that will how all of your highlight colors. Each class is named `hltr-${highlight_title_here}` and are generated from the titles by which you have named your highlights. Although inline CSS is highly encouraged, CSS classes will make your highlights much more flexible and easier to customize.
 
+## Toggle highlight visibility
+
+Run **Highlightr: Toggle highlights in current note** from the command palette to hide or show all highlight colors in the active note. The text remains visible and the note contents are unchanged. This works in editing and reading views, including other panes showing the same note.
+
+Assign a shortcut in **Settings → Hotkeys** by searching for **Toggle highlights in current note**. No shortcut is assigned by default. Each note keeps its own visibility state until Highlightr reloads or Obsidian restarts.
+
 ## Disclaimer
 
 The plugin component will not work with [cMenu plugin](https://github.com/chetachiezikeuzor/cMenu-Plugin).
